@@ -10,13 +10,23 @@
 (tool-bar-mode 0)
 (menu-bar-mode 0)
 (global-linum-mode)
+(global-auto-revert-mode t)
 (setq inhibit-startup-screen t)
+(setq-default indent-tabs-mode nil)
+
+;; Fullscreen by default
+(custom-set-variables
+ '(initial-frame-alist (quote ((fullscreen . maximized)))))
+
+
+;; Remove extra whitespaces on save
+(add-hook 'before-save-hook 'whitespace-cleanup)
 
 
 ;; Theme
-(load-theme 'intellij t t)
-(enable-theme 'intellij)
-		  
+(load-theme 'dichromacy t t)
+(enable-theme 'dichromacy)
+
 
 ;; Package configuration
 
@@ -25,46 +35,75 @@
   (setq web-mode-code-indent-offset 2)
   (setq web-mode-css-indent-offset 2)
   (add-to-list 'auto-mode-alist
-	       '("\\.html\\'" . web-mode))
+               '("\\.html" . web-mode))
   (add-to-list 'auto-mode-alist
-	       '("\\.js\\'" . web-mode))
+               '("\\.jsx" . web-mode))
   (add-to-list 'auto-mode-alist
-	       '("\\.jsx\\'" . web-mode))
-)
-(setq-default indent-tabs-mode nil)
+               '("\\.js" . web-mode))
 
-(use-package
-  company
+  (setq web-mode-engines-alist
+        '(("django" . "\\.html\\'")))
+  (setq web-mode-content-types-alist
+        '(("jsx" . "\\.js[x]?\\'")))
+
+  )
+
+(defun eslint-fix-and-revert ()
+  (let* ((root (locate-dominating-file
+                (or (buffer-file-name) default-directory)
+                "node_modules"))
+         (eslint (and root
+                      (expand-file-name "node_modules/eslint/bin/eslint.js"
+                                        root))))
+    (when (and (equal web-mode-content-type "jsx") (and eslint (file-executable-p eslint)))
+      (interactive)
+      (shell-command (concat eslint (concat " --fix " (buffer-file-name))))
+      (revert-buffer t t))))
+
+(use-package py-autopep8
+  :config
+  (add-hook 'python-mode-hook 'py-autopep8-enable-on-save))
+
+(use-package company
   :config
   (progn
     (add-hook 'after-init-hook 'global-company-mode))
-    (setq company-dabbrev-downcase 0)
+    (setq company-dabbrev-downcase nil)
     (setq company-idle-delay 0))
 
-(use-package
-  company-anaconda
+(use-package company-anaconda
   :config
   (progn
     (add-to-list 'company-backends '(company-anaconda :with company-capf))))
 
-(use-package
-  rjsx-mode
+(use-package importmagic
+  :ensure t
   :config
-  (progn
-    (add-to-list 'auto-mode-alist
-		 '("components\\/.*\\.js\\'" . rjsx-mode))))
-(use-package
-  web-mode
+  (add-hook 'python-mode-hook 'importmagic-mode))
+
+(use-package web-mode
   :config
   (progn
     (require 'web-mode)
-    (add-hook 'web-mode-hook 'my-web-mode-hook)
-    ))
-(use-package
-  flycheck
+    (add-hook 'after-save-hook 'eslint-fix-and-revert)
+    (add-hook 'web-mode-hook 'my-web-mode-hook)))
+
+(use-package flycheck
   :config
   (progn
     (require 'flycheck)
+
+    (defun my/use-eslint-from-node-modules ()
+      (let* ((root (locate-dominating-file
+                    (or (buffer-file-name) default-directory)
+                    "node_modules"))
+             (eslint (and root
+                          (expand-file-name "node_modules/eslint/bin/eslint.js"
+                                            root))))
+        (when (and eslint (file-executable-p eslint))
+          (setq-local flycheck-javascript-eslint-executable eslint))))
+    (add-hook 'flycheck-mode-hook #'my/use-eslint-from-node-modules)
+
     (add-hook 'after-init-hook 'global-flycheck-mode)
     (setq-default flycheck-disabled-checkers
       (append flycheck-disabled-checkers
@@ -110,7 +149,7 @@
     ("b48150eac948d6de3f8103e6e92f105979277b91c96e9687c13f2d80977d381d" "ace9f12e0c00f983068910d9025eefeb5ea7a711e774ee8bb2af5f7376018ad2" default)))
  '(package-selected-packages
    (quote
-    (company-anaconda company ac-anaconda auto-complete intellij-theme ample-zen-theme projectile flycheck indent-guide web-mode anaconda-mode pyenv-mode rjsx-mode use-package)))
+    (json-mode py-autopep8 importmagic company-anaconda company ac-anaconda auto-complete intellij-theme ample-zen-theme projectile flycheck indent-guide web-mode anaconda-mode pyenv-mode use-package)))
  '(pyenv-mode t))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -118,4 +157,3 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
-
