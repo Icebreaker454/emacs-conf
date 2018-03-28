@@ -3,6 +3,8 @@
 (add-to-list 'package-archives
              '("melpa-stable" . "https://stable.melpa.org/packages/"))
 (add-to-list 'package-archives
+             '("melpa" . "https://melpa.org/packages/"))
+(add-to-list 'package-archives
              '("marmalade" . "http://marmalade-repo.org/packages/"))
 (package-initialize) ;; You might already have this line
 
@@ -16,16 +18,26 @@
 
 ;; Fullscreen by default
 (custom-set-variables
- '(initial-frame-alist (quote ((fullscreen . maximized)))))
-
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(custom-safe-themes
+   (quote
+    ("3edbdd0ad45cb8f7c2575c0ad8f6625540283c6e928713c328b0bacf4cfbb60f" "b48150eac948d6de3f8103e6e92f105979277b91c96e9687c13f2d80977d381d" "ace9f12e0c00f983068910d9025eefeb5ea7a711e774ee8bb2af5f7376018ad2" default)))
+ '(initial-frame-alist (quote ((fullscreen . maximized))))
+ '(package-selected-packages
+   (quote
+    (helm-projectile helm exotica-theme melancholy-theme emmet-mode json-mode py-autopep8 importmagic company-anaconda company ac-anaconda auto-complete intellij-theme ample-zen-theme projectile flycheck indent-guide web-mode anaconda-mode pyenv-mode use-package)))
+ '(pyenv-mode t))
 
 ;; Remove extra whitespaces on save
 (add-hook 'before-save-hook 'whitespace-cleanup)
 
 
 ;; Theme
-(load-theme 'dichromacy t t)
-(enable-theme 'dichromacy)
+(load-theme 'exotica t t)
+(enable-theme 'exotica)
 
 
 ;; Package configuration
@@ -34,13 +46,6 @@
   (setq web-mode-markup-indent-offset 2)
   (setq web-mode-code-indent-offset 2)
   (setq web-mode-css-indent-offset 2)
-  (add-to-list 'auto-mode-alist
-               '("\\.html" . web-mode))
-  (add-to-list 'auto-mode-alist
-               '("\\.jsx" . web-mode))
-  (add-to-list 'auto-mode-alist
-               '("\\.js" . web-mode))
-
   (setq web-mode-engines-alist
         '(("django" . "\\.html\\'")))
   (setq web-mode-content-types-alist
@@ -85,6 +90,14 @@
   :config
   (progn
     (require 'web-mode)
+    (add-to-list 'auto-mode-alist
+                 '("\\.html\\'" . web-mode))
+    (add-to-list 'auto-mode-alist
+                 '("\\.jsx\\'" . web-mode))
+    (add-to-list 'auto-mode-alist
+                 '("\\.js\\'" . web-mode))
+    (add-to-list 'auto-mode-alist
+                 '("\\.css\\'" . web-mode))
     (add-hook 'after-save-hook 'eslint-fix-and-revert)
     (add-hook 'web-mode-hook 'my-web-mode-hook)))
 
@@ -139,18 +152,7 @@
     (projectile-global-mode)))
 
 
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(custom-safe-themes
-   (quote
-    ("b48150eac948d6de3f8103e6e92f105979277b91c96e9687c13f2d80977d381d" "ace9f12e0c00f983068910d9025eefeb5ea7a711e774ee8bb2af5f7376018ad2" default)))
- '(package-selected-packages
-   (quote
-    (json-mode py-autopep8 importmagic company-anaconda company ac-anaconda auto-complete intellij-theme ample-zen-theme projectile flycheck indent-guide web-mode anaconda-mode pyenv-mode use-package)))
- '(pyenv-mode t))
+
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
