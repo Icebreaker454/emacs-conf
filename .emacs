@@ -10,6 +10,7 @@
 
 ;; Basic stuff
 (tool-bar-mode 0)
+(scroll-bar-mode 0)
 (menu-bar-mode 0)
 (global-linum-mode)
 (global-auto-revert-mode t)
@@ -22,22 +23,51 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(ansi-color-names-vector
+   ["#ffffff" "#032f62" "#6a737d" "#d73a49" "#6a737d" "#6a737d" "#6f42c1" "#6a737d"])
  '(custom-safe-themes
    (quote
-    ("3edbdd0ad45cb8f7c2575c0ad8f6625540283c6e928713c328b0bacf4cfbb60f" "b48150eac948d6de3f8103e6e92f105979277b91c96e9687c13f2d80977d381d" "ace9f12e0c00f983068910d9025eefeb5ea7a711e774ee8bb2af5f7376018ad2" default)))
+    ("2cfc1cab46c0f5bae8017d3603ea1197be4f4fff8b9750d026d19f0b9e606fae" "3edbdd0ad45cb8f7c2575c0ad8f6625540283c6e928713c328b0bacf4cfbb60f" "b48150eac948d6de3f8103e6e92f105979277b91c96e9687c13f2d80977d381d" "ace9f12e0c00f983068910d9025eefeb5ea7a711e774ee8bb2af5f7376018ad2" default)))
+ '(fci-rule-color "#6a737d")
  '(initial-frame-alist (quote ((fullscreen . maximized))))
+ '(nrepl-message-colors
+   (quote
+    ("#032f62" "#6a737d" "#d73a49" "#6a737d" "#005cc5" "#6f42c1" "#d73a49" "#6a737d")))
  '(package-selected-packages
    (quote
-    (helm-projectile helm exotica-theme melancholy-theme emmet-mode json-mode py-autopep8 importmagic company-anaconda company ac-anaconda auto-complete intellij-theme ample-zen-theme projectile flycheck indent-guide web-mode anaconda-mode pyenv-mode use-package)))
- '(pyenv-mode t))
+    (tabbar neotree github-modern-theme helm-projectile helm exotica-theme melancholy-theme emmet-mode json-mode py-autopep8 importmagic company-anaconda company ac-anaconda auto-complete intellij-theme ample-zen-theme projectile flycheck indent-guide web-mode anaconda-mode pyenv-mode use-package)))
+ '(pdf-view-midnight-colors (quote ("#6a737d" . "#fffbdd")))
+ '(pyenv-mode t)
+ '(vc-annotate-background "#3390ff")
+ '(vc-annotate-color-map
+   (quote
+    ((20 . "#6a737d")
+     (40 . "#032f62")
+     (60 . "#6a737d")
+     (80 . "#6a737d")
+     (100 . "#6a737d")
+     (120 . "#d73a49")
+     (140 . "#6a737d")
+     (160 . "#6a737d")
+     (180 . "#6a737d")
+     (200 . "#6a737d")
+     (220 . "#22863a")
+     (240 . "#005cc5")
+     (260 . "#6f42c1")
+     (280 . "#6a737d")
+     (300 . "#005cc5")
+     (320 . "#6a737d")
+     (340 . "#d73a49")
+     (360 . "#6a737d"))))
+ '(vc-annotate-very-old-color "#6a737d"))
 
 ;; Remove extra whitespaces on save
 (add-hook 'before-save-hook 'whitespace-cleanup)
 
 
 ;; Theme
-(load-theme 'exotica t t)
-(enable-theme 'exotica)
+(load-theme 'github-modern t t)
+(enable-theme 'github-modern)
 
 
 ;; Package configuration
@@ -151,7 +181,25 @@
   (progn
     (projectile-global-mode)))
 
+(use-package
+  tabbar
+  :init
+  (tabbar-mode 1)
+  :config
+  (progn
+    (global-set-key [M-p] 'tabbar-backward-tab)
+    (global-set-key [M-n] 'tabbar-forward-tab)
+  )
+)
 
+(use-package
+  neotree
+  :init
+  (progn
+    (require 'neotree))
+  :config
+  (global-set-key [f8] 'neotree-toggle)
+)
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
