@@ -17,6 +17,11 @@
 (setq inhibit-startup-screen t)
 (setq-default indent-tabs-mode nil)
 
+(setq backup-directory-alist
+      `((".*" . ,temporary-file-directory)))
+(setq auto-save-file-name-transforms
+      `((".*" ,temporary-file-directory t)))
+
 ;; Fullscreen by default
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -35,9 +40,10 @@
     ("#032f62" "#6a737d" "#d73a49" "#6a737d" "#005cc5" "#6f42c1" "#d73a49" "#6a737d")))
  '(package-selected-packages
    (quote
-    (tabbar neotree github-modern-theme helm-projectile helm exotica-theme melancholy-theme emmet-mode json-mode py-autopep8 importmagic company-anaconda company ac-anaconda auto-complete intellij-theme ample-zen-theme projectile flycheck indent-guide web-mode anaconda-mode pyenv-mode use-package)))
+    (auto-minor-mode tabbar neotree github-modern-theme helm-projectile helm exotica-theme melancholy-theme emmet-mode json-mode py-autopep8 importmagic company-anaconda company ac-anaconda auto-complete intellij-theme ample-zen-theme projectile flycheck indent-guide web-mode anaconda-mode pyenv-mode use-package)))
  '(pdf-view-midnight-colors (quote ("#6a737d" . "#fffbdd")))
  '(pyenv-mode t)
+ '(tabbar-mode t nil (tabbar))
  '(vc-annotate-background "#3390ff")
  '(vc-annotate-color-map
    (quote
@@ -80,7 +86,6 @@
         '(("django" . "\\.html\\'")))
   (setq web-mode-content-types-alist
         '(("jsx" . "\\.js[x]?\\'")))
-
   )
 
 (defun eslint-fix-and-revert ()
@@ -94,6 +99,7 @@
       (interactive)
       (shell-command (concat eslint (concat " --fix " (buffer-file-name))))
       (revert-buffer t t))))
+
 
 (use-package py-autopep8
   :config
@@ -123,13 +129,12 @@
     (add-to-list 'auto-mode-alist
                  '("\\.html\\'" . web-mode))
     (add-to-list 'auto-mode-alist
-                 '("\\.jsx\\'" . web-mode))
-    (add-to-list 'auto-mode-alist
-                 '("\\.js\\'" . web-mode))
+                 '("\\.js[x]?\\'" . web-mode))
     (add-to-list 'auto-mode-alist
                  '("\\.css\\'" . web-mode))
     (add-hook 'after-save-hook 'eslint-fix-and-revert)
     (add-hook 'web-mode-hook 'my-web-mode-hook)))
+
 
 (use-package flycheck
   :config
@@ -181,22 +186,41 @@
   (progn
     (projectile-global-mode)))
 
+;; adding spaces
+(defun tabbar-buffer-tab-label (tab)
+  "Return a label for TAB.
+That is, a string used to represent it on the tab bar."
+  (let ((label  (if tabbar--buffer-show-groups
+                    (format "[%s]  " (tabbar-tab-tabset tab))
+                  (format "%s  " (tabbar-tab-value tab)))))
+    ;; Unless the tab bar auto scrolls to keep the selected tab
+    ;; visible, shorten the tab label to keep as many tabs as possible
+    ;; in the visible area of the tab bar.
+    (if tabbar-auto-scroll-flag
+        label
+      (tabbar-shorten
+       label (max 1 (/ (window-width)
+                       (length (tabbar-view
+(tabbar-current-tabset)))))))))
+
 (use-package
   tabbar
   :init
-  (tabbar-mode 1)
+  (progn
+    (custom-set-variables '(tabbar-separator (quote (1.5))))
+    (tabbar-mode 1)
+  )
   :config
   (progn
-    (global-set-key [M-p] 'tabbar-backward-tab)
-    (global-set-key [M-n] 'tabbar-forward-tab)
+    (global-set-key (kbd "M-p") 'tabbar-backward-tab)
+    (global-set-key (kbd "M-n") 'tabbar-forward-tab)
   )
 )
 
 (use-package
   neotree
   :init
-  (progn
-    (require 'neotree))
+  (require 'neotree)
   :config
   (global-set-key [f8] 'neotree-toggle)
 )
@@ -206,4 +230,4 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- )
+ '(default ((t (:inherit nil :stipple nil :background "#ffffff" :foreground "#24292e" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 108 :width normal :foundry "APPL" :family "Monaco")))))
