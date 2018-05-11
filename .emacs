@@ -40,11 +40,13 @@
     ("#032f62" "#6a737d" "#d73a49" "#6a737d" "#005cc5" "#6f42c1" "#d73a49" "#6a737d")))
  '(package-selected-packages
    (quote
-    (dracula-theme auto-minor-mode tabbar neotree github-modern-theme helm-projectile helm exotica-theme melancholy-theme emmet-mode json-mode py-autopep8 importmagic company-anaconda company ac-anaconda auto-complete intellij-theme ample-zen-theme projectile flycheck indent-guide web-mode anaconda-mode pyenv-mode use-package)))
+    (subatomic256-theme gotham-theme atom-dark-theme dracula-theme auto-minor-mode tabbar neotree github-modern-theme helm-projectile helm exotica-theme melancholy-theme emmet-mode json-mode py-autopep8 importmagic company-anaconda company ac-anaconda auto-complete intellij-theme ample-zen-theme projectile flycheck indent-guide web-mode anaconda-mode pyenv-mode use-package)))
  '(pdf-view-midnight-colors (quote ("#6a737d" . "#fffbdd")))
  '(pyenv-mode t)
+ '(tabbar-buffer-tab-label t)
  '(tabbar-mode t nil (tabbar))
  '(tabbar-separator (quote (1.5)))
+ '(tabbar-use-images t)
  '(vc-annotate-background "#3390ff")
  '(vc-annotate-color-map
    (quote
@@ -73,8 +75,10 @@
 
 
 ;; Theme
-(load-theme 'dracula t t)
-(enable-theme 'dracula)
+(load-theme 'subatomic256 t t)
+(enable-theme 'subatomic256)
+(setq gotham-tty-256-colors t)
+(setq gotham-tty-extended-palette t)
 
 
 ;; Package configuration
@@ -116,7 +120,7 @@
 (use-package company-anaconda
   :config
   (progn
-    (add-to-list 'company-backends '(company-anaconda :with company-capf))))
+    (add-to-list 'company-backends '(company-capf :with company-anaconda))))
 
 (use-package importmagic
   :ensure t
@@ -225,3 +229,12 @@ That is, a string used to represent it on the tab bar."
   :config
   (global-set-key [f8] 'neotree-toggle)
 )
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(tabbar-modified ((t (:inherit tabbar-default :foreground "orchid" :box (:line-width 1 :color "white" :style released-button) :height 1.3))))
+ '(tabbar-selected ((t (:inherit tabbar-default :foreground "navajo white" :box (:line-width 1 :color "white" :style released-button) :height 1.3))))
+ '(tabbar-selected-modified ((t (:inherit tabbar-default :foreground "magenta4" :box (:line-width 1 :color "white" :style released-button) :height 1.3))))
+ '(tabbar-unselected ((t (:inherit tabbar-default :box (:line-width 1 :color "white" :style released-button) :height 1.3)))))
