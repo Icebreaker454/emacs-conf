@@ -40,6 +40,7 @@
  '(fci-rule-color "#6a737d")
  '(hl-sexp-background-color "#efebe9")
  '(initial-frame-alist (quote ((fullscreen . maximized))))
+ '(menu-bar-mode nil)
  '(nrepl-message-colors
    (quote
     ("#032f62" "#6a737d" "#d73a49" "#6a737d" "#005cc5" "#6f42c1" "#d73a49" "#6a737d")))
@@ -48,6 +49,7 @@
     (tern-auto-complete doom-themes zenburn-theme eslint-fix company-tern powerline leuven-theme subatomic256-theme gotham-theme atom-dark-theme dracula-theme auto-minor-mode tabbar neotree github-modern-theme helm-projectile helm exotica-theme melancholy-theme emmet-mode json-mode py-autopep8 importmagic company-anaconda company ac-anaconda auto-complete intellij-theme ample-zen-theme projectile flycheck indent-guide web-mode anaconda-mode pyenv-mode use-package)))
  '(pdf-view-midnight-colors (quote ("#6a737d" . "#fffbdd")))
  '(pyenv-mode t)
+ '(tool-bar-mode nil)
  '(vc-annotate-background "#3390ff")
  '(vc-annotate-color-map
    (quote
@@ -238,4 +240,4 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- )
+ '(default ((t (:family "Source Code Pro" :foundry "ADBO" :slant normal :weight normal :height 113 :width normal)))))
