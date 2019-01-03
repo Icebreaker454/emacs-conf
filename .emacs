@@ -36,7 +36,7 @@
    ["#ffffff" "#032f62" "#6a737d" "#d73a49" "#6a737d" "#6a737d" "#6f42c1" "#6a737d"])
  '(custom-safe-themes
    (quote
-    ("190a9882bef28d7e944aa610aa68fe1ee34ecea6127239178c7ac848754992df" "9a155066ec746201156bb39f7518c1828a73d67742e11271e4f24b7b178c4710" "1db337246ebc9c083be0d728f8d20913a0f46edc0a00277746ba411c149d7fe5" "e9460a84d876da407d9e6accf9ceba453e2f86f8b86076f37c08ad155de8223c" "748d0e2ffdaf95015a539dcc95ab888283284ad7b076963760422cbe5e21903a" "2cfc1cab46c0f5bae8017d3603ea1197be4f4fff8b9750d026d19f0b9e606fae" "3edbdd0ad45cb8f7c2575c0ad8f6625540283c6e928713c328b0bacf4cfbb60f" "b48150eac948d6de3f8103e6e92f105979277b91c96e9687c13f2d80977d381d" "ace9f12e0c00f983068910d9025eefeb5ea7a711e774ee8bb2af5f7376018ad2" default)))
+    ("151bde695af0b0e69c3846500f58d9a0ca8cb2d447da68d7fbf4154dcf818ebc" "f0dc4ddca147f3c7b1c7397141b888562a48d9888f1595d69572db73be99a024" "2c88b703cbe7ce802bf6f0bffe3edbb8d9ec68fc7557089d4eaa1e29f7529fe1" "b35a14c7d94c1f411890d45edfb9dc1bd61c5becd5c326790b51df6ebf60f402" "cd736a63aa586be066d5a1f0e51179239fe70e16a9f18991f6f5d99732cabb32" "b4c13d25b1f9f66eb769e05889ee000f89d64b089f96851b6da643cee4fdab08" "93a0885d5f46d2aeac12bf6be1754faa7d5e28b27926b8aa812840fe7d0b7983" "1c082c9b84449e54af757bcae23617d11f563fc9f33a832a8a2813c4d7dfb652" "190a9882bef28d7e944aa610aa68fe1ee34ecea6127239178c7ac848754992df" "9a155066ec746201156bb39f7518c1828a73d67742e11271e4f24b7b178c4710" "1db337246ebc9c083be0d728f8d20913a0f46edc0a00277746ba411c149d7fe5" "e9460a84d876da407d9e6accf9ceba453e2f86f8b86076f37c08ad155de8223c" "748d0e2ffdaf95015a539dcc95ab888283284ad7b076963760422cbe5e21903a" "2cfc1cab46c0f5bae8017d3603ea1197be4f4fff8b9750d026d19f0b9e606fae" "3edbdd0ad45cb8f7c2575c0ad8f6625540283c6e928713c328b0bacf4cfbb60f" "b48150eac948d6de3f8103e6e92f105979277b91c96e9687c13f2d80977d381d" "ace9f12e0c00f983068910d9025eefeb5ea7a711e774ee8bb2af5f7376018ad2" default)))
  '(fci-rule-color "#6a737d")
  '(hl-sexp-background-color "#efebe9")
  '(initial-frame-alist (quote ((fullscreen . maximized))))
@@ -46,7 +46,7 @@
     ("#032f62" "#6a737d" "#d73a49" "#6a737d" "#005cc5" "#6f42c1" "#d73a49" "#6a737d")))
  '(package-selected-packages
    (quote
-    (tern-auto-complete doom-themes zenburn-theme eslint-fix company-tern powerline leuven-theme subatomic256-theme gotham-theme atom-dark-theme dracula-theme auto-minor-mode tabbar neotree github-modern-theme helm-projectile helm exotica-theme melancholy-theme emmet-mode json-mode py-autopep8 importmagic company-anaconda company ac-anaconda auto-complete intellij-theme ample-zen-theme projectile flycheck indent-guide web-mode anaconda-mode pyenv-mode use-package)))
+    (tern-auto-complete doom-themes zenburn-theme eslint-fix company-tern powerline leuven-theme subatomic256-theme gotham-theme atom-dark-theme dracula-theme auto-minor-mode tabbar neotree github-modern-theme exotica-theme melancholy-theme emmet-mode json-mode py-autopep8 importmagic company-anaconda company ac-anaconda auto-complete intellij-theme ample-zen-theme projectile flycheck indent-guide web-mode anaconda-mode pyenv-mode use-package)))
  '(pdf-view-midnight-colors (quote ("#6a737d" . "#fffbdd")))
  '(pyenv-mode t)
  '(tool-bar-mode nil)
@@ -105,6 +105,7 @@
 
 (use-package py-autopep8
   :config
+  (setq py-autopep8-options '("--max-line-length=100"))
   (add-hook 'python-mode-hook 'py-autopep8-enable-on-save))
 
 (use-package company
@@ -113,11 +114,6 @@
     (add-hook 'after-init-hook 'global-company-mode))
     (setq company-dabbrev-downcase nil)
     (setq company-idle-delay 0))
-
-(use-package company-anaconda
-  :config
-  (progn
-    (add-to-list 'company-backends '(company-capf :with company-anaconda))))
 
 (use-package tern-auto-complete
   :config
@@ -194,14 +190,20 @@
     (pyenv-mode)))
 (use-package
   anaconda-mode
+  :hook ((python-mode . anaconda-mode)
+         (python-mode . anaconda-eldoc-mode))
   :config
-  (progn
-    (add-hook 'python-mode-hook 'anaconda-mode)))
+  (use-package company-anaconda
+    :requires company
+    :config (add-to-list 'company-backends 'company-anaconda)))
+
 (use-package
   projectile
   :init
   (progn
-    (projectile-global-mode)))
+    (projectile-mode)
+    (setq projectile-keymap-prefix (kbd "C-c p"))
+  ))
 
 (use-package
   doom-themes
