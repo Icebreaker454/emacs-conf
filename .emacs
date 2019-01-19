@@ -209,8 +209,8 @@
   projectile
   :init
   (progn
-    (projectile-mode)
-    (setq projectile-keymap-prefix (kbd "C-c p"))
+    (projectile-mode +1)
+    (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
   ))
 
 (use-package
