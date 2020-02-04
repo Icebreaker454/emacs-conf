@@ -240,26 +240,15 @@
       (add-hook 'python-mode-hook 'my/company-jedi-hook)))
 
   (use-package
-    pyenv-mode
+    auto-virtualenvwrapper
     :after python company-jedi
-    :commands pyenv-mode-versions
     :init
-    (defun my/projectile-switch ()
-      "Set pyenv version and JEDI venv matching project name."
-      (let ((pyenv-file (projectile-expand-root ".python-version")))
-        (if (file-exists-p pyenv-file)
-          (progn
-            (let ((venv-name (replace-regexp-in-string
-                              "\n"
-                              ""
-                              (with-temp-buffer (insert-file-contents pyenv-file) (buffer-string)))))
-              (pyenv-mode-set venv-name)
-              (setq jedi:server-args (list "--virtual-env" (pyenv-mode-full-path venv-name))))
-          (pyenv-mode-unset)))))
-    (add-hook 'python-mode-hook 'pyenv-mode)
-    (add-hook 'projectile-after-switch-project-hook 'my/projectile-switch))
-
-  (use-package pyenv-mode-auto)
+    (defun my/restart-jedi-with-correct-venv ()
+      "Set JEDI venv matching project name."
+      (setq jedi:server-args (list "--virtual-env" (auto-virtualenvwrapper-find-virtualenv-path)))
+      (jedi:stop-server))
+    :hook (python-mode-hook . #'auto-virtualenvwrapper-activate)
+    :hook (python-mode-hook . 'my/restart-jedi-with-correct-venv))
 
   ;; Py.Test integration
   (use-package python-pytest)
@@ -439,7 +428,7 @@
  '(org-agenda-files nil)
  '(package-selected-packages
    (quote
-    (go-mode realgud-ipdb realgud helm-ag doom-modeline helm-projectile helm-rg helm-flyspell helm zenburn python-pytest hl-todo lua-mode kaolin-themes company-jedi yasnippet-snippets telephone-line magit persp-projectile perspective nlinum ag afternoon-theme pyenv-mode-auto markdown-mode smart-hungry-delete docker-compose-mode dockerfile-mode tern-auto-complete doom-themes zenburn-theme eslint-fix company-tern powerline leuven-theme subatomic256-theme gotham-theme atom-dark-theme dracula-theme auto-minor-mode tabbar neotree github-modern-theme exotica-theme melancholy-theme emmet-mode json-mode py-autopep8 importmagic company-anaconda company ac-anaconda auto-complete intellij-theme ample-zen-theme projectile flycheck indent-guide web-mode anaconda-mode pyenv-mode use-package)))
+    (auto-virtualenvwrapper auto-virtualenv go-mode realgud-ipdb realgud helm-ag doom-modeline helm-projectile helm-rg helm-flyspell helm zenburn python-pytest hl-todo lua-mode kaolin-themes company-jedi yasnippet-snippets telephone-line magit persp-projectile perspective nlinum ag afternoon-theme pyenv-mode-auto markdown-mode smart-hungry-delete docker-compose-mode dockerfile-mode tern-auto-complete doom-themes zenburn-theme eslint-fix company-tern powerline leuven-theme subatomic256-theme gotham-theme atom-dark-theme dracula-theme auto-minor-mode tabbar neotree github-modern-theme exotica-theme melancholy-theme emmet-mode json-mode py-autopep8 importmagic company-anaconda company ac-anaconda auto-complete intellij-theme ample-zen-theme projectile flycheck indent-guide web-mode anaconda-mode pyenv-mode use-package)))
  '(pdf-view-midnight-colors (quote ("#6a737d" . "#fffbdd")))
  '(pyenv-mode t)
  '(tool-bar-mode nil)
