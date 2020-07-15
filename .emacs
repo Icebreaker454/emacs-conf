@@ -19,11 +19,11 @@
   (require 'package) ;; You might already have this line
 
   (add-to-list 'package-archives
-               '("melpa-stable" . "https://stable.melpa.org/packages/"))
+	       '("melpa-stable" . "https://stable.melpa.org/packages/"))
   (add-to-list 'package-archives
-               '("melpa" . "https://melpa.org/packages/"))
+	       '("melpa" . "https://melpa.org/packages/"))
   (add-to-list 'package-archives
-               '("marmalade" . "http://marmalade-repo.org/packages/"))
+	       '("marmalade" . "http://marmalade-repo.org/packages/"))
   (package-initialize) ;; You might already have this line
 
   ;;
@@ -46,14 +46,10 @@
 
   (set-face-attribute 'default nil :family (quote (JetBrains Mono)))
 
-  (byte-compile-file "~/.emacs")
-  (byte-recompile-directory "~/.emacs.d")
-  (setq load-prefer-newer t)
-
   (setq backup-directory-alist
-        `((".*" . ,temporary-file-directory)))
+	`((".*" . ,temporary-file-directory)))
   (setq auto-save-file-name-transforms
-        `((".*" ,temporary-file-directory t)))
+	`((".*" ,temporary-file-directory t)))
   ;; Remove extra whitespaces on save
   (add-hook 'before-save-hook 'whitespace-cleanup)
 
@@ -76,6 +72,13 @@
   (setq message-log-max 10000)
   (fset 'yes-or-no-p 'y-or-n-p)
 
+  (defun volatile-kill-buffer ()
+   "Kill current buffer unconditionally."
+   (interactive)
+   (let ((buffer-modified-p nil))
+     (kill-buffer (current-buffer))))
+
+  (global-set-key (kbd "C-x k") 'volatile-kill-buffer)
   (global-set-key (kbd "C-x C-c") 'delete-frame)
   (global-set-key (kbd "s-[") 'other-window)
   (global-set-key (kbd "s-]") 'other-window)
@@ -109,7 +112,6 @@
      (quote
       (magit persp-projectile perspective nlinum ag afternoon-theme pyenv-mode-auto markdown-mode smart-hungry-delete docker-compose-mode dockerfile-mode tern-auto-complete doom-themes zenburn-theme eslint-fix company-tern powerline leuven-theme subatomic256-theme gotham-theme atom-dark-theme dracula-theme auto-minor-mode tabbar neotree github-modern-theme exotica-theme melancholy-theme emmet-mode json-mode py-autopep8 importmagic company-anaconda company ac-anaconda auto-complete intellij-theme ample-zen-theme projectile flycheck indent-guide web-mode anaconda-mode pyenv-mode use-package)))
    '(pdf-view-midnight-colors (quote ("#6a737d" . "#fffbdd")))
-   '(pyenv-mode t)
    '(tool-bar-mode nil)
    '(vc-annotate-background "#3390ff")
    '(vc-annotate-color-map
@@ -143,7 +145,7 @@
   (use-package smart-hungry-delete
     :ensure t
     :bind (("<backspace>" . smart-hungry-delete-backward-char)
-                   ("C-d" . smart-hungry-delete-forward-char))
+		   ("C-d" . smart-hungry-delete-forward-char))
     :defer nil ;; dont defer so we can add our functions to hooks
     :config (smart-hungry-delete-add-default-hooks)
     )
@@ -156,16 +158,21 @@
 
   ;; TODO entries Highlighting
   (use-package hl-todo
-    :config
+    :init
     (global-hl-todo-mode))
+
+  ;; Environment variables from .envrc files per project/directory
+  (use-package direnv
+    :config
+    (direnv-mode))
 
   ;; YASnippet
   (use-package yasnippet
-    :config
+    :init
     (yas-global-mode 1))
 
   (use-package telephone-line
-    :config
+    :init
     (progn
       (telephone-line-mode 1)))
   (use-package nlinum
@@ -203,15 +210,6 @@
       (global-set-key (kbd "C-c m g s") 'magit-status)
       (global-set-key (kbd "C-c m g p") 'magit-pull)
       ))
-  (use-package org
-    :config
-    (progn
-      (setq org-agenda-files (list "~/OneDrive - Intellias/Notebooks/LeanSA/Interviews.org"
-                                   "~/OneDrive - Intellias/Notebooks/LeanSA/TaskLog.org"
-                                   "~/OneDrive - Intellias/Notebooks/LeanSA/Info/Main.org"))
-      (setq org-todo-keywords
-            '((sequence "TODO(t)" "IN PROGRESS(p)" "BLOCKED(b@)" "|" "DONE(d!)" "CANCELED(c@)")))
-      ))
 
 
   ;;
@@ -221,64 +219,45 @@
   (defun my/python-configuration-hook ()
     (interactive)
     (setq tab-width     4
-          python-indent-offset 4
-          python-shell-interpreter "ipython"
-          python-shell-interpreter-args "-i")
+	  python-indent-offset 4
+	  python-shell-interpreter "ipython"
+	  python-shell-interpreter-args "-i")
   (setq-default indent-tabs-mode nil))
 
   (add-hook 'python-mode-hook 'my/python-configuration-hook)
 
-  (use-package
-    company-jedi
-    :bind (("M-." . 'jedi:goto-definition))
-    :bind (("M-," . 'jedi:goto-definition-pop-marker))
-    :bind (("M-/" . 'jedi:show-doc))
-    :config
-    (progn
-      (defun my/company-jedi-hook ()
-        (add-to-list 'company-backends 'company-jedi))
-      (add-hook 'python-mode-hook 'my/company-jedi-hook)))
-
-  (use-package
-    auto-virtualenvwrapper
-    :after python company-jedi
+  (use-package elpy
+    :ensure t
     :init
-    (defun my/restart-jedi-with-correct-venv ()
-      "Set JEDI venv matching project name."
-      (setq jedi:server-args (list "--virtual-env" (auto-virtualenvwrapper-find-virtualenv-path)))
-      (jedi:stop-server))
-    :hook (python-mode-hook . #'auto-virtualenvwrapper-activate)
-    :hook (python-mode-hook . 'my/restart-jedi-with-correct-venv))
+    (elpy-enable)
+    :config
+    (setq python-check-command "pylint")
+    :bind ("M-." . 'elpy-goto-definition))
+
+  (use-package pipenv
+    :hook (python-mode . pipenv-mode))
 
   ;; Py.Test integration
   (use-package python-pytest)
 
-  (use-package py-autopep8
-    :config
-    (setq py-autopep8-options '("--max-line-length=100"))
-    (add-hook 'python-mode-hook 'py-autopep8-enable-on-save))
-
   (use-package company
-    :ensure t
+    :ensure
     :defer t
     :config
     (progn
       (add-hook 'after-init-hook 'global-company-mode)
       (setq company-dabbrev-downcase nil
-            company-minimum-prefix-length 0
-            company-tooltip-limit 20)))
-
-  (use-package importmagic
-    :ensure t
-    :config
-    (add-hook 'python-mode-hook 'importmagic-mode))
+	    company-minimum-prefix-length 0
+	    company-tooltip-idle-delay 0
+	    company-tooltip-limit 20)))
 
   ;;
   ;; GO
   ;;
   (use-package go-mode
     :config
-    (add-to-list 'auto-mode-alist '("\\.go\\'" . go-mode)))
+    (add-to-list 'auto-mode-alist '("\\.go\\'" . go-mode))
+    (add-hook 'before-save-hook 'gofmt-before-save))
 
 
   ;;
@@ -289,11 +268,11 @@
     (progn
       (require 'web-mode)
       (add-to-list 'auto-mode-alist
-                   '("\\.html\\'" . web-mode))
+		   '("\\.html\\'" . web-mode))
       (add-to-list 'auto-mode-alist
-                   '("\\.js[x]?\\'" . web-mode))
+		   '("\\.js[x]?\\'" . web-mode))
       (add-to-list 'auto-mode-alist
-                   '("\\.css\\'" . web-mode))
+		   '("\\.css\\'" . web-mode))
       (add-hook 'web-mode-hook #'my/my-web-mode-hook)))
 
   ;; LUA!!!!
@@ -308,49 +287,7 @@
     (progn
       (require 'flycheck)
 
-      (add-hook 'after-init-hook 'global-flycheck-mode)
-      (setq-default flycheck-disabled-checkers
-        (append flycheck-disabled-checkers
-                '(javascript-jshint)))
-      (setq-default flycheck-disabled-checkers
-        (append flycheck-disabled-checkers
-          '(python-flake8)))
-
-      ;; use eslint with web-mode for jsx files
-      (flycheck-add-mode 'javascript-eslint 'web-mode)
-
-      ;; customize flycheck temp file prefix
-      (setq-default flycheck-temp-prefix ".flycheck")
-
-  ;; disable json-jsonlist checking for json files
-      (setq-default flycheck-disabled-checkers
-        (append flycheck-disabled-checkers
-                '(json-jsonlist)))
-      ))
-
-  (defun my/my-web-mode-hook ()
-    (setq web-mode-markup-indent-offset 2)
-    (setq web-mode-code-indent-offset 2)
-    (setq web-mode-css-indent-offset 2)
-    (setq web-mode-engines-alist
-          '(("django" . "\\.html\\'")))
-    (setq web-mode-content-types-alist
-          '(("jsx" . "\\.js[x]?\\'")))
-
-    (defun eslint-fix ()
-      (interactive)
-      (when (equal web-mode-content-type "jsx")
-        (shell-command (concat flycheck-javascript-eslint-executable (concat " --fix " (concat " --cache " buffer-file-name))))
-      (revert-buffer t t)
-    ))
-    (add-hook 'after-save-hook #'eslint-fix)
-
-    )
-  (use-package tern-auto-complete
-    :config
-    (progn
-      (add-to-list 'company-backends 'company-tern)))
-
+      (add-hook 'after-init-hook 'global-flycheck-mode)))
 
   ;;
   ;; ENHANCED VISUALS  - Themes
@@ -359,23 +296,25 @@
   (use-package doom-themes
     :config
       (progn
-        ;; Global settings (defaults)
-        (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
-              doom-themes-enable-italic t) ; if nil, italics is universally disabled
+	;; Global settings (defaults)
+	(setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+	      doom-themes-enable-italic t) ; if nil, italics is universally disabled
 
-        ;; Load the theme (doom-one, doom-molokai, etc); keep in mind that each theme
-        ;; may have their own settings.
-        (load-theme 'doom-one t)
-        (setq doom-one-light-brighter-comments t)
-        (setq doom-one-light-padded-modeline t)
-        ;; Enable flashing mode-line on errors
-        (doom-themes-visual-bell-config)
+	;; Load the theme (doom-one, doom-molokai, etc); keep in mind that each theme
+	;; may have their own settings.
+	(load-theme 'doom-peacock t)
+	(setq doom-peacock-brighter-comments t)
+	(setq doom-peacock-padded-modeline t)
+	(setq neo-window-fixed-size nil)
+	;; Enable flashing mode-line on errors
+	(doom-themes-visual-bell-config)
 
-        ;; Enable custom neotree theme (all-the-icons must be installed!)
-        (doom-themes-neotree-config)
-        ;; or for treemacs users
-        (doom-themes-treemacs-config)
-        ))
+	;; Enable custom neotree theme (all-the-icons must be installed!)
+	(doom-themes-neotree-config)
+
+	;; or for treemacs users
+	(doom-themes-treemacs-config)
+	))
   (use-package doom-modeline
     :ensure t
     :hook (after-init . doom-modeline-mode))
@@ -392,8 +331,8 @@
     :ensure t
     :commands (markdown-mode gfm-mode)
     :mode (("README\\.md\\'" . gfm-mode)
-           ("\\.md\\'" . markdown-mode)
-           ("\\.markdown\\'" . markdown-mode))
+	   ("\\.md\\'" . markdown-mode)
+	   ("\\.markdown\\'" . markdown-mode))
     :init (setq markdown-command "multimarkdown"))
 
 
@@ -417,8 +356,10 @@
    ["#ffffff" "#032f62" "#6a737d" "#d73a49" "#6a737d" "#6a737d" "#6f42c1" "#6a737d"])
  '(custom-safe-themes
    (quote
-    ("d7383f47263f7969baf3856ab8b3df649eb77eafdff0c5731bee2ad18e0faed2" "0f1733ad53138ddd381267b4033bcb07f5e75cd7f22089c7e650f1bb28fc67f4" "fa477d10f10aa808a2d8165a4f7e6cee1ab7f902b6853fbee911a9e27cf346bc" "51043b04c31d7a62ae10466da95a37725638310a38c471cc2e9772891146ee52" "7d4340a89c1f576d1b5dec57635ab93cdc006524bda486b66d01a6f70cffb08e" "a9d67f7c030b3fa6e58e4580438759942185951e9438dd45f2c668c8d7ab2caf" "886fe9a7e4f5194f1c9b1438955a9776ff849f9e2f2bbb4fa7ed8879cdca0631" "84d2f9eeb3f82d619ca4bfffe5f157282f4779732f48a5ac1484d94d5ff5b279" "6b289bab28a7e511f9c54496be647dc60f5bd8f9917c9495978762b99d8c96a0" "49ec957b508c7d64708b40b0273697a84d3fee4f15dd9fc4a9588016adee3dad" "100e7c5956d7bb3fd0eebff57fde6de8f3b9fafa056a2519f169f85199cc1c96" "fe666e5ac37c2dfcf80074e88b9252c71a22b6f5d2f566df9a7aa4f9bea55ef8" "170bb47b35baa3d2439f0fd26b49f4278e9a8decf611aa33a0dad1397620ddc3" "151bde695af0b0e69c3846500f58d9a0ca8cb2d447da68d7fbf4154dcf818ebc" "f0dc4ddca147f3c7b1c7397141b888562a48d9888f1595d69572db73be99a024" "2c88b703cbe7ce802bf6f0bffe3edbb8d9ec68fc7557089d4eaa1e29f7529fe1" "b35a14c7d94c1f411890d45edfb9dc1bd61c5becd5c326790b51df6ebf60f402" "cd736a63aa586be066d5a1f0e51179239fe70e16a9f18991f6f5d99732cabb32" "b4c13d25b1f9f66eb769e05889ee000f89d64b089f96851b6da643cee4fdab08" "93a0885d5f46d2aeac12bf6be1754faa7d5e28b27926b8aa812840fe7d0b7983" "1c082c9b84449e54af757bcae23617d11f563fc9f33a832a8a2813c4d7dfb652" "190a9882bef28d7e944aa610aa68fe1ee34ecea6127239178c7ac848754992df" "9a155066ec746201156bb39f7518c1828a73d67742e11271e4f24b7b178c4710" "1db337246ebc9c083be0d728f8d20913a0f46edc0a00277746ba411c149d7fe5" "e9460a84d876da407d9e6accf9ceba453e2f86f8b86076f37c08ad155de8223c" "748d0e2ffdaf95015a539dcc95ab888283284ad7b076963760422cbe5e21903a" "2cfc1cab46c0f5bae8017d3603ea1197be4f4fff8b9750d026d19f0b9e606fae" "3edbdd0ad45cb8f7c2575c0ad8f6625540283c6e928713c328b0bacf4cfbb60f" "b48150eac948d6de3f8103e6e92f105979277b91c96e9687c13f2d80977d381d" "ace9f12e0c00f983068910d9025eefeb5ea7a711e774ee8bb2af5f7376018ad2" default)))
+    ("7e78a1030293619094ea6ae80a7579a562068087080e01c2b8b503b27900165c" "04232a0bfc50eac64c12471607090ecac9d7fd2d79e388f8543d1c5439ed81f5" "6b289bab28a7e511f9c54496be647dc60f5bd8f9917c9495978762b99d8c96a0" "49ec957b508c7d64708b40b0273697a84d3fee4f15dd9fc4a9588016adee3dad" "100e7c5956d7bb3fd0eebff57fde6de8f3b9fafa056a2519f169f85199cc1c96" "fe666e5ac37c2dfcf80074e88b9252c71a22b6f5d2f566df9a7aa4f9bea55ef8" "170bb47b35baa3d2439f0fd26b49f4278e9a8decf611aa33a0dad1397620ddc3" "151bde695af0b0e69c3846500f58d9a0ca8cb2d447da68d7fbf4154dcf818ebc" "f0dc4ddca147f3c7b1c7397141b888562a48d9888f1595d69572db73be99a024" "2c88b703cbe7ce802bf6f0bffe3edbb8d9ec68fc7557089d4eaa1e29f7529fe1" "b35a14c7d94c1f411890d45edfb9dc1bd61c5becd5c326790b51df6ebf60f402" "cd736a63aa586be066d5a1f0e51179239fe70e16a9f18991f6f5d99732cabb32" "b4c13d25b1f9f66eb769e05889ee000f89d64b089f96851b6da643cee4fdab08" "93a0885d5f46d2aeac12bf6be1754faa7d5e28b27926b8aa812840fe7d0b7983" "1c082c9b84449e54af757bcae23617d11f563fc9f33a832a8a2813c4d7dfb652" "190a9882bef28d7e944aa610aa68fe1ee34ecea6127239178c7ac848754992df" "9a155066ec746201156bb39f7518c1828a73d67742e11271e4f24b7b178c4710" "1db337246ebc9c083be0d728f8d20913a0f46edc0a00277746ba411c149d7fe5" "e9460a84d876da407d9e6accf9ceba453e2f86f8b86076f37c08ad155de8223c" "748d0e2ffdaf95015a539dcc95ab888283284ad7b076963760422cbe5e21903a" "2cfc1cab46c0f5bae8017d3603ea1197be4f4fff8b9750d026d19f0b9e606fae" "3edbdd0ad45cb8f7c2575c0ad8f6625540283c6e928713c328b0bacf4cfbb60f" "b48150eac948d6de3f8103e6e92f105979277b91c96e9687c13f2d80977d381d" "ace9f12e0c00f983068910d9025eefeb5ea7a711e774ee8bb2af5f7376018ad2" default)))
+ '(doom-modeline-mode t)
  '(fci-rule-color "#6a737d")
+ '(helm-completion-style (quote emacs))
  '(hl-sexp-background-color "#efebe9")
  '(initial-frame-alist (quote ((fullscreen . maximized))))
  '(menu-bar-mode nil)
@@ -428,7 +369,7 @@
  '(org-agenda-files nil)
  '(package-selected-packages
    (quote
-    (auto-virtualenvwrapper auto-virtualenv go-mode realgud-ipdb realgud helm-ag doom-modeline helm-projectile helm-rg helm-flyspell helm zenburn python-pytest hl-todo lua-mode kaolin-themes company-jedi yasnippet-snippets telephone-line magit persp-projectile perspective nlinum ag afternoon-theme pyenv-mode-auto markdown-mode smart-hungry-delete docker-compose-mode dockerfile-mode tern-auto-complete doom-themes zenburn-theme eslint-fix company-tern powerline leuven-theme subatomic256-theme gotham-theme atom-dark-theme dracula-theme auto-minor-mode tabbar neotree github-modern-theme exotica-theme melancholy-theme emmet-mode json-mode py-autopep8 importmagic company-anaconda company ac-anaconda auto-complete intellij-theme ample-zen-theme projectile flycheck indent-guide web-mode anaconda-mode pyenv-mode use-package)))
+    (direnv projectile-direnv python-black avy elpy magit persp-projectile perspective nlinum ag afternoon-theme pyenv-mode-auto markdown-mode smart-hungry-delete docker-compose-mode dockerfile-mode tern-auto-complete doom-themes zenburn-theme eslint-fix company-tern powerline leuven-theme subatomic256-theme gotham-theme atom-dark-theme dracula-theme auto-minor-mode tabbar neotree github-modern-theme exotica-theme melancholy-theme emmet-mode json-mode py-autopep8 importmagic company-anaconda company ac-anaconda auto-complete intellij-theme ample-zen-theme projectile flycheck indent-guide web-mode anaconda-mode pyenv-mode use-package)))
  '(pdf-view-midnight-colors (quote ("#6a737d" . "#fffbdd")))
  '(pyenv-mode t)
  '(tool-bar-mode nil)
@@ -460,8 +401,4 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(default ((t (:family "Monaco" :height 115))))
- '(mode-line ((t (:background "dark magenta" :box nil))))
- '(powerline-active0 ((t (:inherit mode-line :background "goldenrod" :foreground "black"))))
- '(powerline-active2 ((t (:inherit mode-line :background "navajo white" :foreground "gray0"))))
- '(powerline-inactive0 ((t (:inherit mode-line-inactive :background "SlateGray1")))))
+ '(default ((t (:family "Monaco" :height 115)))))
