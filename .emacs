@@ -19,11 +19,11 @@
   (require 'package) ;; You might already have this line
 
   (add-to-list 'package-archives
-	       '("melpa-stable" . "https://stable.melpa.org/packages/"))
+               '("melpa-stable" . "https://stable.melpa.org/packages/"))
   (add-to-list 'package-archives
-	       '("melpa" . "https://melpa.org/packages/"))
+               '("melpa" . "https://melpa.org/packages/"))
   (add-to-list 'package-archives
-	       '("marmalade" . "http://marmalade-repo.org/packages/"))
+               '("marmalade" . "http://marmalade-repo.org/packages/"))
   (package-initialize) ;; You might already have this line
 
   ;;
@@ -32,6 +32,9 @@
   (tool-bar-mode 0)
   (scroll-bar-mode 0)
   (menu-bar-mode 0)
+
+  (when (string= system-type "darwin")
+    (setq dired-use-ls-dired nil))
 
   (global-auto-revert-mode t)
 
@@ -47,9 +50,9 @@
   (set-face-attribute 'default nil :family (quote (JetBrains Mono)))
 
   (setq backup-directory-alist
-	`((".*" . ,temporary-file-directory)))
+        `((".*" . ,temporary-file-directory)))
   (setq auto-save-file-name-transforms
-	`((".*" ,temporary-file-directory t)))
+        `((".*" ,temporary-file-directory t)))
   ;; Remove extra whitespaces on save
   (add-hook 'before-save-hook 'whitespace-cleanup)
 
@@ -85,7 +88,6 @@
 
   ;; Shortcuts for commonly used files
   (global-set-key (kbd "C-c e") (lambda() (interactive)(find-file "~/.emacs")))
-  (global-set-key (kbd "C-c i") (lambda() (interactive)(find-file "~/OneDrive - Intellias/Notebooks/LeanSA/Info/")))
 
   ;; Fullscreen by default
   (custom-set-variables
@@ -142,10 +144,18 @@
   ;;
   ;; CORE EMACS STUFF
   ;;
+
+  (org-babel-do-load-languages 'org-babel-load-languages
+                               '(
+                                 (shell . t)
+                                 (python . t)
+                                 )
+                               )
+
   (use-package smart-hungry-delete
     :ensure t
     :bind (("<backspace>" . smart-hungry-delete-backward-char)
-		   ("C-d" . smart-hungry-delete-forward-char))
+                   ("C-d" . smart-hungry-delete-forward-char))
     :defer nil ;; dont defer so we can add our functions to hooks
     :config (smart-hungry-delete-add-default-hooks)
     )
@@ -201,7 +211,6 @@
       (define-key projectile-mode-map  (kbd "C-c p") 'projectile-command-map)
       (setq projectile-mode-line-prefix " Proj")
       (setq projectile-completion-system 'helm)
-      (setq projectile-project-search-path '("~/Projects" "~/OneDrive - Intellias/Notebooks/"))
       ))
 
   (use-package magit
@@ -219,20 +228,22 @@
   (defun my/python-configuration-hook ()
     (interactive)
     (setq tab-width     4
-	  python-indent-offset 4
-	  python-shell-interpreter "ipython"
-	  python-shell-interpreter-args "-i")
+          python-indent-offset 4
+          python-shell-interpreter "ipython"
+          python-shell-interpreter-args "-i")
   (setq-default indent-tabs-mode nil))
 
   (add-hook 'python-mode-hook 'my/python-configuration-hook)
 
   (use-package elpy
     :ensure t
-    :init
-    (elpy-enable)
     :config
-    (setq python-check-command "pylint")
-    :bind ("M-." . 'elpy-goto-definition))
+    (progn
+      (elpy-enable)
+      (setq python-check-command "pylint"))
+    :bind ("M-." . 'elpy-goto-definition)
+    :bind ("M-F" . 'elpy-black-fix-code)
+    )
 
   (use-package pipenv
     :hook (python-mode . pipenv-mode))
@@ -247,9 +258,15 @@
     (progn
       (add-hook 'after-init-hook 'global-company-mode)
       (setq company-dabbrev-downcase nil
-	    company-minimum-prefix-length 0
-	    company-tooltip-idle-delay 0
-	    company-tooltip-limit 20)))
+            company-minimum-prefix-length 0
+            company-tooltip-idle-delay 0
+            company-tooltip-limit 20)))
+
+  (use-package company-box
+    :config
+    (progn
+      (setq company-box-tooltip-minimum-width 100))
+    :hook (company-mode . company-box-mode))
 
   ;;
   ;; GO
@@ -268,11 +285,11 @@
     (progn
       (require 'web-mode)
       (add-to-list 'auto-mode-alist
-		   '("\\.html\\'" . web-mode))
+                   '("\\.html\\'" . web-mode))
       (add-to-list 'auto-mode-alist
-		   '("\\.js[x]?\\'" . web-mode))
+                   '("\\.js[x]?\\'" . web-mode))
       (add-to-list 'auto-mode-alist
-		   '("\\.css\\'" . web-mode))
+                   '("\\.css\\'" . web-mode))
       (add-hook 'web-mode-hook #'my/my-web-mode-hook)))
 
   ;; LUA!!!!
@@ -296,25 +313,28 @@
   (use-package doom-themes
     :config
       (progn
-	;; Global settings (defaults)
-	(setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
-	      doom-themes-enable-italic t) ; if nil, italics is universally disabled
+        ;; Global settings (defaults)
+        (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+              doom-themes-enable-italic t) ; if nil, italics is universally disabled
 
-	;; Load the theme (doom-one, doom-molokai, etc); keep in mind that each theme
-	;; may have their own settings.
-	(load-theme 'doom-peacock t)
-	(setq doom-peacock-brighter-comments t)
-	(setq doom-peacock-padded-modeline t)
-	(setq neo-window-fixed-size nil)
-	;; Enable flashing mode-line on errors
-	(doom-themes-visual-bell-config)
+        ;; Load the theme (doom-one, doom-molokai, etc); keep in mind that each theme
+        ;; may have their own settings.
+        (load-theme 'doom-peacock t)
+        (setq doom-peacock-brighter-comments t)
+        (setq doom-peacock-padded-modeline t)
+        (setq neo-window-fixed-size nil)
+        ;; Enable flashing mode-line on errors
+        (doom-themes-visual-bell-config)
 
-	;; Enable custom neotree theme (all-the-icons must be installed!)
-	(doom-themes-neotree-config)
+        ;; Enable custom neotree theme (all-the-icons must be installed!)
+        (doom-themes-neotree-config)
 
-	;; or for treemacs users
-	(doom-themes-treemacs-config)
-	))
+        ;; or for treemacs users
+        (doom-themes-treemacs-config)
+
+        ;; Org config from doom themes
+        (doom-themes-org-config)
+        ))
   (use-package doom-modeline
     :ensure t
     :hook (after-init . doom-modeline-mode))
@@ -331,17 +351,9 @@
     :ensure t
     :commands (markdown-mode gfm-mode)
     :mode (("README\\.md\\'" . gfm-mode)
-	   ("\\.md\\'" . markdown-mode)
-	   ("\\.markdown\\'" . markdown-mode))
+           ("\\.md\\'" . markdown-mode)
+           ("\\.markdown\\'" . markdown-mode))
     :init (setq markdown-command "multimarkdown"))
-
-
-  (custom-set-faces
-   ;; custom-set-faces was added by Custom.
-   ;; If you edit it by hand, you could mess it up, so be careful.
-   ;; Your init file should contain only one such instance.
-   ;; If there is more than one, they won't work right.
-   '(default ((t (:family "Monaco" :height 115)))))
 
 )
 ;;; .emacs ends here
@@ -355,28 +367,28 @@
  '(ansi-color-names-vector
    ["#ffffff" "#032f62" "#6a737d" "#d73a49" "#6a737d" "#6a737d" "#6f42c1" "#6a737d"])
  '(custom-safe-themes
-   (quote
-    ("7e78a1030293619094ea6ae80a7579a562068087080e01c2b8b503b27900165c" "04232a0bfc50eac64c12471607090ecac9d7fd2d79e388f8543d1c5439ed81f5" "6b289bab28a7e511f9c54496be647dc60f5bd8f9917c9495978762b99d8c96a0" "49ec957b508c7d64708b40b0273697a84d3fee4f15dd9fc4a9588016adee3dad" "100e7c5956d7bb3fd0eebff57fde6de8f3b9fafa056a2519f169f85199cc1c96" "fe666e5ac37c2dfcf80074e88b9252c71a22b6f5d2f566df9a7aa4f9bea55ef8" "170bb47b35baa3d2439f0fd26b49f4278e9a8decf611aa33a0dad1397620ddc3" "151bde695af0b0e69c3846500f58d9a0ca8cb2d447da68d7fbf4154dcf818ebc" "f0dc4ddca147f3c7b1c7397141b888562a48d9888f1595d69572db73be99a024" "2c88b703cbe7ce802bf6f0bffe3edbb8d9ec68fc7557089d4eaa1e29f7529fe1" "b35a14c7d94c1f411890d45edfb9dc1bd61c5becd5c326790b51df6ebf60f402" "cd736a63aa586be066d5a1f0e51179239fe70e16a9f18991f6f5d99732cabb32" "b4c13d25b1f9f66eb769e05889ee000f89d64b089f96851b6da643cee4fdab08" "93a0885d5f46d2aeac12bf6be1754faa7d5e28b27926b8aa812840fe7d0b7983" "1c082c9b84449e54af757bcae23617d11f563fc9f33a832a8a2813c4d7dfb652" "190a9882bef28d7e944aa610aa68fe1ee34ecea6127239178c7ac848754992df" "9a155066ec746201156bb39f7518c1828a73d67742e11271e4f24b7b178c4710" "1db337246ebc9c083be0d728f8d20913a0f46edc0a00277746ba411c149d7fe5" "e9460a84d876da407d9e6accf9ceba453e2f86f8b86076f37c08ad155de8223c" "748d0e2ffdaf95015a539dcc95ab888283284ad7b076963760422cbe5e21903a" "2cfc1cab46c0f5bae8017d3603ea1197be4f4fff8b9750d026d19f0b9e606fae" "3edbdd0ad45cb8f7c2575c0ad8f6625540283c6e928713c328b0bacf4cfbb60f" "b48150eac948d6de3f8103e6e92f105979277b91c96e9687c13f2d80977d381d" "ace9f12e0c00f983068910d9025eefeb5ea7a711e774ee8bb2af5f7376018ad2" default)))
+   '("7e78a1030293619094ea6ae80a7579a562068087080e01c2b8b503b27900165c" "04232a0bfc50eac64c12471607090ecac9d7fd2d79e388f8543d1c5439ed81f5" "6b289bab28a7e511f9c54496be647dc60f5bd8f9917c9495978762b99d8c96a0" "49ec957b508c7d64708b40b0273697a84d3fee4f15dd9fc4a9588016adee3dad" "100e7c5956d7bb3fd0eebff57fde6de8f3b9fafa056a2519f169f85199cc1c96" "fe666e5ac37c2dfcf80074e88b9252c71a22b6f5d2f566df9a7aa4f9bea55ef8" "170bb47b35baa3d2439f0fd26b49f4278e9a8decf611aa33a0dad1397620ddc3" "151bde695af0b0e69c3846500f58d9a0ca8cb2d447da68d7fbf4154dcf818ebc" "f0dc4ddca147f3c7b1c7397141b888562a48d9888f1595d69572db73be99a024" "2c88b703cbe7ce802bf6f0bffe3edbb8d9ec68fc7557089d4eaa1e29f7529fe1" "b35a14c7d94c1f411890d45edfb9dc1bd61c5becd5c326790b51df6ebf60f402" "cd736a63aa586be066d5a1f0e51179239fe70e16a9f18991f6f5d99732cabb32" "b4c13d25b1f9f66eb769e05889ee000f89d64b089f96851b6da643cee4fdab08" "93a0885d5f46d2aeac12bf6be1754faa7d5e28b27926b8aa812840fe7d0b7983" "1c082c9b84449e54af757bcae23617d11f563fc9f33a832a8a2813c4d7dfb652" "190a9882bef28d7e944aa610aa68fe1ee34ecea6127239178c7ac848754992df" "9a155066ec746201156bb39f7518c1828a73d67742e11271e4f24b7b178c4710" "1db337246ebc9c083be0d728f8d20913a0f46edc0a00277746ba411c149d7fe5" "e9460a84d876da407d9e6accf9ceba453e2f86f8b86076f37c08ad155de8223c" "748d0e2ffdaf95015a539dcc95ab888283284ad7b076963760422cbe5e21903a" "2cfc1cab46c0f5bae8017d3603ea1197be4f4fff8b9750d026d19f0b9e606fae" "3edbdd0ad45cb8f7c2575c0ad8f6625540283c6e928713c328b0bacf4cfbb60f" "b48150eac948d6de3f8103e6e92f105979277b91c96e9687c13f2d80977d381d" "ace9f12e0c00f983068910d9025eefeb5ea7a711e774ee8bb2af5f7376018ad2" default))
  '(doom-modeline-mode t)
+ '(elpy-syntax-check-command "pylint")
  '(fci-rule-color "#6a737d")
- '(helm-completion-style (quote emacs))
+ '(helm-completion-style 'emacs)
  '(hl-sexp-background-color "#efebe9")
- '(initial-frame-alist (quote ((fullscreen . maximized))))
+ '(initial-frame-alist '((fullscreen . maximized)))
  '(menu-bar-mode nil)
  '(nrepl-message-colors
-   (quote
-    ("#032f62" "#6a737d" "#d73a49" "#6a737d" "#005cc5" "#6f42c1" "#d73a49" "#6a737d")))
+   '("#032f62" "#6a737d" "#d73a49" "#6a737d" "#005cc5" "#6f42c1" "#d73a49" "#6a737d"))
  '(org-agenda-files nil)
+ '(org-export-backends '(ascii html icalendar latex md odt))
  '(package-selected-packages
-   (quote
-    (direnv projectile-direnv python-black avy elpy magit persp-projectile perspective nlinum ag afternoon-theme pyenv-mode-auto markdown-mode smart-hungry-delete docker-compose-mode dockerfile-mode tern-auto-complete doom-themes zenburn-theme eslint-fix company-tern powerline leuven-theme subatomic256-theme gotham-theme atom-dark-theme dracula-theme auto-minor-mode tabbar neotree github-modern-theme exotica-theme melancholy-theme emmet-mode json-mode py-autopep8 importmagic company-anaconda company ac-anaconda auto-complete intellij-theme ample-zen-theme projectile flycheck indent-guide web-mode anaconda-mode pyenv-mode use-package)))
- '(pdf-view-midnight-colors (quote ("#6a737d" . "#fffbdd")))
- '(pyenv-mode t)
+   '(graphql company-box py-isort helm-ag pipenv helm-projectile lua-mode go-mode python-pytest helm-rg multiple-cursors hl-todo telephone-line helm direnv projectile-direnv python-black avy elpy magit persp-projectile perspective nlinum ag afternoon-theme pyenv-mode-auto markdown-mode smart-hungry-delete docker-compose-mode dockerfile-mode tern-auto-complete doom-themes zenburn-theme eslint-fix company-tern powerline leuven-theme subatomic256-theme gotham-theme atom-dark-theme dracula-theme auto-minor-mode tabbar neotree github-modern-theme exotica-theme melancholy-theme emmet-mode json-mode py-autopep8 importmagic company-anaconda company ac-anaconda auto-complete intellij-theme ample-zen-theme projectile flycheck indent-guide web-mode anaconda-mode pyenv-mode use-package))
+ '(pdf-view-midnight-colors '("#6a737d" . "#fffbdd"))
+ '(safe-local-variable-values
+   '((pyvenv-activate quote /Users/icebreaker/Projects/Ferret/conversario\.connection)
+     (pyvenv-activate . /Users/icebreaker/Projects/Ferret/conversario\.connection)))
  '(tool-bar-mode nil)
  '(vc-annotate-background "#3390ff")
  '(vc-annotate-color-map
-   (quote
-    ((20 . "#6a737d")
+   '((20 . "#6a737d")
      (40 . "#032f62")
      (60 . "#6a737d")
      (80 . "#6a737d")
@@ -393,7 +405,7 @@
      (300 . "#005cc5")
      (320 . "#6a737d")
      (340 . "#d73a49")
-     (360 . "#6a737d"))))
+     (360 . "#6a737d")))
  '(vc-annotate-very-old-color "#6a737d")
  '(yas-global-mode t))
 (custom-set-faces
@@ -401,4 +413,5 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(default ((t (:family "Monaco" :height 115)))))
+ '(default ((t (:family "Monaco" :height 125)))))
+(put 'downcase-region 'disabled nil)
