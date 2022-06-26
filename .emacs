@@ -7,8 +7,6 @@
 (package-initialize)
 
 (eval-when-compile
-  ;; Following line is not needed if use-package.el is in ~/.emacs.d
-  (add-to-list 'load-path "<path where use-package is installed>")
   (require 'use-package))
 
 (when (string= system-type "darwin")
@@ -16,8 +14,6 @@
 
 (setq backup-directory-alist
       `((".*" . ,temporary-file-directory)))
-(setq auto-save-file-name-transforms
-      `((".*" ,temporary-file-directory t)))
 
 (menu-bar-mode -1)
 (toggle-scroll-bar -1)
@@ -41,6 +37,12 @@
   :ensure t
   :config
   (global-hl-todo-mode))
+
+(use-package puppet-mode
+  :ensure t)
+(use-package flymake-puppet
+  :ensure t)
+
 
 (use-package yasnippet
   :ensure t
@@ -74,25 +76,25 @@
     (defvar lsp-language-id-configuration
       '((python-mode . "python")))
     (setq lsp-pylsp-plugins-pylint-enabled t))
-
   :config
   (lsp-register-client
      (make-lsp-client :new-connection (lsp-stdio-connection "pylsp")
 		  :activation-fn (lsp-activate-on "python")
 		  :server-id 'pylsp))
-
   :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
-	 (python-mode . lsp))
+	 (python-mode . lsp)
+	 (latex-mode . lsp)
+	 )
   :bind
   ("M-." . 'lsp-find-definition)
   :commands lsp)
 
 (use-package doom-themes
   :ensure t
-  :config
+  :init
   (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
 	doom-themes-enable-italic t) ;
-  (load-theme 'doom-one t)
+  (load-theme 'doom-gruvbox t)
   (doom-themes-visual-bell-config)
   ;; Enable custom neotree theme (all-the-icons must be installed!)
   (doom-themes-neotree-config)
@@ -164,7 +166,7 @@
     ;; using a Hi-DPI display, uncomment this to double the icon size.
     ;;(treemacs-resize-icons 44)
 
-    (treemacs-follow-mode t)
+    (treemacs-project-follow-mode t)
     (treemacs-filewatch-mode t)
     (treemacs-fringe-indicator-mode 'always)
 
@@ -234,8 +236,7 @@
 
 (use-package counsel-projectile
   :ensure t
-  :bind(
-	:map projectile-command-map
+  :bind(:map projectile-command-map
 	     ("s" . counsel-projectile-rg))
 
   )
@@ -276,13 +277,15 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
-   '("835868dcd17131ba8b9619d14c67c127aa18b90a82438c8613586331129dda63" default))
+   '("c4063322b5011829f7fdd7509979b5823e8eea2abf1fe5572ec4b7af1dd78519" "5784d048e5a985627520beb8a101561b502a191b52fa401139f4dd20acb07607" "7eea50883f10e5c6ad6f81e153c640b3a288cd8dc1d26e4696f7d40f754cc703" "7a7b1d475b42c1a0b61f3b1d1225dd249ffa1abb1b7f726aec59ac7ca3bf4dae" "23c806e34594a583ea5bbf5adf9a964afe4f28b4467d28777bcba0d35aa0872e" "6c531d6c3dbc344045af7829a3a20a09929e6c41d7a7278963f7d3215139f6a7" "a9a67b318b7417adbedaab02f05fa679973e9718d9d26075c6235b1f0db703c8" "da186cce19b5aed3f6a2316845583dbee76aea9255ea0da857d1c058ff003546" "266ecb1511fa3513ed7992e6cd461756a895dcc5fef2d378f165fed1c894a78c" "246a9596178bb806c5f41e5b571546bb6e0f4bd41a9da0df5dfbca7ec6e2250c" "6c98bc9f39e8f8fd6da5b9c74a624cbb3782b4be8abae8fd84cbc43053d7c175" "850bb46cc41d8a28669f78b98db04a46053eca663db71a001b40288a9b36796c" "a82ab9f1308b4e10684815b08c9cac6b07d5ccb12491f44a942d845b406b0296" "028c226411a386abc7f7a0fba1a2ebfae5fe69e2a816f54898df41a6a3412bb5" "cbdf8c2e1b2b5c15b34ddb5063f1b21514c7169ff20e081d39cf57ffee89bc1e" "835868dcd17131ba8b9619d14c67c127aa18b90a82438c8613586331129dda63" default))
  '(package-selected-packages
-   '(yasnippet-snippets treemacs-magit treemacs-icons-dired treemacs-projectile treemacs wgrep dockerfile-mode docker jinja2-mode magit smart-hungry-delete hl-todo python-black pyvenv ag counsel-projectile swiper-helm counsel ivy company flycheck doom-themes lsp-mode doom-modeline dot-mode helm helm-ag helm-projectile projectile use-package))
+   '(auctex graphql-mode puppet-mode yasnippet-snippets treemacs-magit treemacs-icons-dired treemacs-projectile treemacs wgrep dockerfile-mode docker jinja2-mode magit smart-hungry-delete hl-todo python-black pyvenv ag counsel-projectile swiper-helm counsel ivy company flycheck doom-themes lsp-mode doom-modeline dot-mode helm helm-ag helm-projectile projectile use-package))
  '(safe-local-variable-values
-   '((eval pyvenv-activate "~/Projects/Ferret/conversario.notifications")
+   '((encoding . utf-8)
+     (eval pyvenv-activate "~/Projects/Ferret/conversario.notifications")
      (lsp-pylsp-plugins-jedi-environment . "/Users/icebreaker/Projects/Ferret/conversario.notifications")
-     (lsp-pylsp-plugins-jedi-environment . "~/Projects/Ferret/conversario.notifications"))))
+     (lsp-pylsp-plugins-jedi-environment . "~/Projects/Ferret/conversario.notifications")))
+ '(warning-suppress-types '((lsp-mode))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
